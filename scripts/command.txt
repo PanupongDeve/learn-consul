@@ -1,4 +1,4 @@
-consul agent -dev -config-dir=./consul.d -node=machine
+consul agent -dev -config-dir=./consul.d -client=0.0.0.0  -node=machine
 
 consul members
 
@@ -7,3 +7,27 @@ dig @127.0.0.1 -p 8600 machine.service.consul
 dig @127.0.0.1 -p 8600 web.service.consul
 
 dig @127.0.0.1 -p 8600 rails.web.service.consul
+
+curl http://localhost:8500/v1/catalog/service/web
+
+curl http://localhost:8500/v1/catalog/service/web?passing
+
+
+Run socat service
+socat -v tcp-l:8181,fork exec:"/bin/cat"
+
+nc 127.0.0.1 8181
+
+consul reload
+
+
+consul connect proxy -sidecar-for socat
+
+consul connect proxy -service web -upstream socat:9191
+
+consul connect proxy -sidecar-for web
+
+
+consul kv put redis/config/minconns 1
+
+consul kv put redis/config/maxconns 25
